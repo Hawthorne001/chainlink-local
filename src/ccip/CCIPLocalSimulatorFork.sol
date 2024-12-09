@@ -7,28 +7,64 @@ import {Internal} from "@chainlink/contracts-ccip/src/v0.8/ccip/libraries/Intern
 import {IERC20} from
     "@chainlink/contracts-ccip/src/v0.8/vendor/openzeppelin-solidity/v4.8.3/contracts/token/ERC20/IERC20.sol";
 
+/// @title IRouterFork Interface
 interface IRouterFork {
+    /**
+     * @notice Structure representing an offRamp configuration
+     *
+     * @param sourceChainSelector - The chain selector for the source chain
+     * @param offRamp - The address of the offRamp contract
+     */
     struct OffRamp {
         uint64 sourceChainSelector;
         address offRamp;
     }
 
+    /**
+     * @notice Gets the list of offRamps
+     *
+     * @return offRamps - Array of OffRamp structs
+     */
     function getOffRamps() external view returns (OffRamp[] memory);
 }
 
+/// @title IEVM2EVMOffRampFork Interface
 interface IEVM2EVMOffRampFork {
-    function executeSingleMessage(Internal.EVM2EVMMessage memory message, bytes[] memory offchainTokenData) external;
+    /**
+     * @notice Executes a single CCIP message on the offRamp
+     *
+     * @param message - The CCIP message to be executed
+     * @param offchainTokenData - Additional offchain token data
+     */
+    function executeSingleMessage(
+        Internal.EVM2EVMMessage memory message,
+        bytes[] memory offchainTokenData,
+        uint32[] memory tokenGasOverrides
+    ) external;
 }
 
-// @notice Works with Foundry only
+/// @title CCIPLocalSimulatorFork
+/// @notice Works with Foundry only
 contract CCIPLocalSimulatorFork is Test {
+    /**
+     * @notice Event emitted when a CCIP send request is made
+     *
+     * @param message - The EVM2EVM message that was sent
+     */
     event CCIPSendRequested(Internal.EVM2EVMMessage message);
 
+    /// @notice The immutable register instance
     Register immutable i_register;
+
+    /// @notice The address of the LINK faucet
     address constant LINK_FAUCET = 0x4281eCF07378Ee595C564a59048801330f3084eE;
 
+    /// @notice Mapping to track processed messages
     mapping(bytes32 messageId => bool isProcessed) internal s_processedMessages;
 
+    /**
+     * @notice Constructor to initialize the contract
+     */
     constructor() {
         vm.recordLogs();
         i_register = new Register();
@@ -61,12 +97,18 @@ contract CCIPLocalSimulatorFork is Test {
             IRouterFork(i_register.getNetworkDetails(block.chainid).routerAddress).getOffRamps();
         length = offRamps.length;
 
-        for (uint256 i; i < length; ++i) {
-            if (offRamps[i].sourceChainSelector == message.sourceChainSelector) {
-                vm.startPrank(offRamps[i].offRamp);
+        for (uint256 i = length; i > 0; --i) {
+            if (offRamps[i - 1].sourceChainSelector == message.sourceChainSelector) {
+                vm.startPrank(offRamps[i - 1].offRamp);
                 uint256 numberOfTokens = message.tokenAmounts.length;
                 bytes[] memory offchainTokenData = new bytes[](numberOfTokens);
-                IEVM2EVMOffRampFork(offRamps[i].offRamp).executeSingleMessage(message, offchainTokenData);
+                uint32[] memory tokenGasOverrides = new uint32[](numberOfTokens);
+                for (uint256 j; j < numberOfTokens; ++j) {
+                    tokenGasOverrides[j] = uint32(message.gasLimit);
+                }
+                IEVM2EVMOffRampFork(offRamps[i - 1].offRamp).executeSingleMessage(
+                    message, offchainTokenData, tokenGasOverrides
+                );
                 vm.stopPrank();
                 break;
             }
