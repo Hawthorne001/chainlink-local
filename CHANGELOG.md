@@ -6,6 +6,58 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.6] - 18 September 2025
+
+### Dependencies
+
+| Package                   | Version |
+| ------------------------- | ------- |
+| @chainlink/contracts-ccip | 1.6.0   |
+| @chainlink/contracts      | 1.4.0   |
+
+### Added
+
+- Added `switchChainAndRouteMessage(uint256[] memory chainIds)` function which is an overlap of already existing `switchChainAndRouteMessage(chainId)` in the `CCIPLocalSimulatorFork.sol` contract. This new function can be used to route multiple CCIP messages to multiple chains in a single call.
+
+### Changed
+
+- Refactored `CCIPLocalSimulatorFork.sol` so it can route all CCIP messages sent from a loop and not just the first one
+
+## [0.2.6-beta.0] - 10 September 2025
+
+### Dependencies
+
+| Package                   | Version |
+| ------------------------- | ------- |
+| @chainlink/contracts-ccip | 1.6.0   |
+| @chainlink/contracts      | 1.4.0   |
+
+### Services
+
+- [x] Chainlink CCIP v1.6
+
+### Changed
+
+- Refactored `CCIPLocalSimulatorFork.sol` to deliver more than one message to more than one chain in a same call
+
+## [0.2.6-beta] - 11 June 2025
+
+### Dependencies
+
+| Package                   | Version |
+| ------------------------- | ------- |
+| @chainlink/contracts-ccip | 1.6.0   |
+| @chainlink/contracts      | 1.4.0   |
+
+### Services
+
+- [x] Chainlink CCIP v1.6
+
+### Changed
+
+- Refactored `CCIPLocalSimulatorFork.sol` so it can route all CCIP messages sent
+  from a loop and not just the first one
+
 ## [0.2.5] - 10 June 2025
 
 ### Dependencies
@@ -485,3 +537,8 @@ and this project adheres to
 [0.2.5-beta.0]:
   https://github.com/smartcontractkit/chainlink-local/releases/tag/v0.2.5-beta.0
 [0.2.5]: https://github.com/smartcontractkit/chainlink-local/releases/tag/v0.2.5
+[0.2.6-beta]:
+  https://github.com/smartcontractkit/chainlink-local/releases/tag/v0.2.6-beta
+[0.2.6-beta.0]:
+  https://github.com/smartcontractkit/chainlink-local/releases/tag/v0.2.6-beta.0
+[0.2.6]: https://github.com/smartcontractkit/chainlink-local/releases/tag/v0.2.6
